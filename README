@@ -1,0 +1,42 @@
+PBKB: Peptide bioactivity kernel based
+
+This package contains tools to learn peptide bioactivity predictor and find the peptides that maximize the output of the predictor
+
+-------
+How to install
+-------
+
+To ease the utilization, we have programmed a pure python implementation and very optimized version of this work in Cython that is faster than the pure python version.
+
+To install this module (*recommended*), simply run the following command:
+> pip install -e PBKB
+
+-------
+Usage
+-------
+
+The easiest way to use the  ....
+#todo
+
+-------
+More information
+-------
+
+All files have a good amount of comments to explain how everything works.
+Details of the methods implemented are available from:
+
+Giguère, S., Marchand, M., Laviolette, F., Drouin, A., & Corbeil, J. (2012).
+Learning a peptide-protein binding affinity predictor with kernel ridge regression.
+
+Sébastien Giguère et al. “Machine learning assisted design of highly active
+peptides for drug discovery”. In: PLoS Comput Biol 11.4 (2015), e1004074.
+
+Sébastien Giguere et al. “Algorithms for the Hard Pre-Image Problem of String
+Kernels and the General Problem of String Prediction”. In: Proceedings of
+the 32nd International Conference on Machine Learning (ICML-15). 2015,
+pp. 2021–2029
+
+If you have concerns, questions, comments ... well anything,
+contact the author at: tossouprudencio@gmail.com
+
+
