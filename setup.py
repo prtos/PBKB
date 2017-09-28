@@ -8,13 +8,8 @@
 
 import os, numpy
 
-try:
-  from setuptools import setup
-  from setuptools import Extension
-except ImportError:
-  from distutils.core import setup
-  from distutils.extension import Extension
-
+from distutils.core import setup
+from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
 
@@ -26,23 +21,23 @@ ext_modules = [
     Extension("kernels._gskernel", from_pwd("kernels", "_gskernel.pyx"),
               include_dirs=[numpy.get_include()]),
 
-    Extension("inference.BB.inference._branch_and_bound",
-              from_pwd("inference", "BB", "inference", "_branch_and_bound.pyx"),
+    Extension("inference.BB.search.bound_calculator",
+              from_pwd("inference", "BB", "search", "bound_calculator.pyx"),
               include_dirs=[numpy.get_include()]),
-    Extension("inference.BB.inference.bound_calculator",
-              from_pwd("inference", "BB", "inference", "bound_calculator.pyx"),
+    Extension("inference.BB.search.node",
+              from_pwd("inference", "BB", "search", "node.pyx"),
               include_dirs=[numpy.get_include()]),
-    Extension("inference.BB.inference.search_stats",
-              from_pwd("inference", "BB", "inference", "search_stats.pyx"),
-              include_dirs=[numpy.get_include()]),
-    Extension("inference.BB.inference.node",
-              from_pwd("inference", "BB", "inference", "node.pyx"),
-              include_dirs=[numpy.get_include()]),
-    Extension("inference.BB.inference.node_creator",
-              from_pwd("inference", "BB", "inference", "node_creator.pyx"),
+    Extension("inference.BB.search.node_creator",
+              from_pwd("inference", "BB", "search", "node_creator.pyx"),
               include_dirs=[numpy.get_include()]),
     Extension("inference.BB.features.gs_similarity_weights",
               from_pwd("inference", "BB",  "features", "gs_similarity_weights.pyx"),
+              include_dirs=[numpy.get_include()]),
+    Extension("inference.BB.search._branch_and_bound",
+              from_pwd("inference", "BB", "search", "_branch_and_bound.pyx"),
+              include_dirs=[numpy.get_include()]),
+    Extension("inference.BB.search.search_stats",
+              from_pwd("inference", "BB", "search", "search_stats.pyx"),
               include_dirs=[numpy.get_include()]),
 
     Extension("inference.graph_based.preimage_fast",

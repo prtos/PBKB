@@ -1,12 +1,12 @@
 import numpy as np
 import PBKB.inference.BB.preimage as bb
 import PBKB.inference.graph_based.preimage as gb
-
+from PBKB.kernels.gskernel import GSKernel
 from sklearn.model_selection._search import check_is_fitted
 from sklearn.model_selection import KFold
 from sklearn.base import RegressorMixin, BaseEstimator
 from sklearn.linear_model.ridge import _solve_cholesky_kernel
-from PBKB.kernels.gskernel import GSKernel
+
 
 
 class KernelRidge(BaseEstimator, RegressorMixin):
@@ -15,13 +15,13 @@ class KernelRidge(BaseEstimator, RegressorMixin):
                  center_kernel=False, verbose=1):
         super(KernelRidge, self).__init__()
         self.alpha = alpha
+        self.amino_acid_file = amino_acid_file
+        self.sigma_position = sigma_position
+        self.sigma_amino_acid = sigma_amino_acid
+        self.substring_length = substring_length
+        self.is_normalized = is_normalized
         self.center_kernel = center_kernel
         self.verbose = verbose
-        self.kernel = GSKernel(amino_acid_file_name=amino_acid_file,
-                               sigma_position=sigma_position,
-                               sigma_amino_acid=sigma_amino_acid,
-                               n=substring_length,
-                               is_normalized=is_normalized)
 
     def _get_kernel(self, X, Y=None):
         if Y is None:
@@ -29,6 +29,11 @@ class KernelRidge(BaseEstimator, RegressorMixin):
         return self.kernel(X, Y)
 
     def fit(self, X, y=None, sample_weight=None):
+        self.kernel = GSKernel(amino_acid_file_name=self.amino_acid_file,
+                               sigma_position=self.sigma_position,
+                               sigma_amino_acid=self.sigma_amino_acid,
+                               n=self.substring_length,
+                               is_normalized=self.is_normalized)
         K = self._get_kernel(X)
         if self.center_kernel:
             self.compute_train_stats(K, y)
@@ -114,7 +119,8 @@ class KernelRidge(BaseEstimator, RegressorMixin):
 
 if __name__ == "__main__":
     from sklearn.model_selection import GridSearchCV
-    from PBKB.utils.loader import aa_file, aa_file_oboc
+    from PBKB.utils.loader import aa_file, aa_file_oboc, dataset_dir, from_pwd
+    from PBKB.utils.graphics import heatmap
     x_train = np.array(["AAAAA", "WSWSW", "SWSWS"])
     y_train = np.array([1.2, 40, 54])
     x_test = np.array(["AWWSA"])
@@ -124,28 +130,28 @@ if __name__ == "__main__":
                       sigma_position=3,
                       sigma_amino_acid=3,
                       substring_length=1,
-                      is_normalized=True)
+                      is_normalized=False)
     rgr.fit(x_train, y_train)
     print rgr.predict(x_test)
-
+    print rgr.inference(10, 5)
 
     ################################################################################################
-    filename = "data.txt"
+    filename = from_pwd(dataset_dir, "data.txt")
     with open(filename, "r") as f:
         temp = [line[:-1].split("\t") for line in f.readlines()]
         inputs, targets = zip(*temp)
         targets = map(float, targets)
         inputs, targets = np.array(inputs), np.array(targets)
 
-    v, n = 6, 10
+    v, n = 2, 4
     cv_params = dict(sigma_position=np.logspace(-v, v, n),
                      sigma_amino_acid=np.logspace(-v, v, n),
                      substring_length=np.arange(1, 3, 1),
                      alpha=np.logspace(-4, 4, n),
-                     normalize_matrix=[True])
+                     is_normalized=[True])
     base_learner = KernelRidge(amino_acid_file=aa_file_oboc)
-    inner_cv = KFold(n_splits=5, shuffle=False)
-    outer_cv = KFold(n_splits=5, shuffle=False)  # LeaveOneOut()
+    inner_cv = KFold(n_splits=3, shuffle=False)
+    outer_cv = KFold(n_splits=3, shuffle=False)  # LeaveOneOut()
     targets_pred, targets_true = [], []
     str_format = "{:^30} | {}"
     all_best_hp = []
@@ -154,7 +160,7 @@ if __name__ == "__main__":
         inputs_train, inputs_test = inputs[otrain_index], inputs[otest_index]
         targets_train, targets_test = targets[otrain_index], targets[otest_index]
 
-        rgr = GridSearchCV(base_learner, cv_params, n_jobs=1, cv=inner_cv, verbose=1)
+        rgr = GridSearchCV(base_learner, cv_params, n_jobs=8, cv=inner_cv, verbose=1)
         # rgr = RandomizedSearchCV(base_learner, cv_params, n_iter=1000, n_jobs=8, cv=inner_cv, verbose=1)
         rgr.fit(inputs_train, targets_train)
         targets_pred += rgr.predict(inputs_test).tolist()

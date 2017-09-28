@@ -3,11 +3,11 @@ __author__ = 'amelie'
 from sklearn.base import BaseEstimator
 import numpy
 
-from PBKB.inference.BB.inference.graph_builder import GraphBuilder
-from PBKB.inference.BB.inference.branch_and_bound import BranchAndBound
-from PBKB.inference.BB.inference.bound_factory import get_gs_similarity_node_creator
+from PBKB.inference.BB.search.graph_builder import GraphBuilder
+from PBKB.inference.BB.search.branch_and_bound import BranchAndBound
+from PBKB.inference.BB.search.bound_factory import get_gs_similarity_node_creator
 from PBKB.inference.BB.features.gs_similarity_feature_space import GenericStringSimilarityFeatureSpace
-from PBKB.inference.BB.inference.stats_builder import LearnerStatsBuilder
+from PBKB.inference.BB.search.stats_builder import LearnerStatsBuilder
 
 
 class Preimage(BaseEstimator):
