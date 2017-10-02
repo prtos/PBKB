@@ -9,11 +9,11 @@ from sklearn.linear_model.ridge import _solve_cholesky_kernel
 
 
 
-class KernelRidge(BaseEstimator, RegressorMixin):
+class GSRidge(BaseEstimator, RegressorMixin):
     def __init__(self, alpha=1, amino_acid_file="", sigma_position=0.01,
                  sigma_amino_acid=0.01, substring_length=1, is_normalized=True,
                  center_kernel=False, verbose=1):
-        super(KernelRidge, self).__init__()
+        super(GSRidge, self).__init__()
         self.alpha = alpha
         self.amino_acid_file = amino_acid_file
         self.sigma_position = sigma_position
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     y_train = np.array([1.2, 40, 54])
     x_test = np.array(["AWWSA"])
 
-    rgr = KernelRidge(alpha=1,
+    rgr = GSRidge(alpha=1,
                       amino_acid_file=aa_file,
                       sigma_position=3,
                       sigma_amino_acid=3,
@@ -149,7 +149,7 @@ if __name__ == "__main__":
                      substring_length=np.arange(1, 3, 1),
                      alpha=np.logspace(-4, 4, n),
                      is_normalized=[True])
-    base_learner = KernelRidge(amino_acid_file=aa_file_oboc)
+    base_learner = GSRidge(amino_acid_file=aa_file_oboc)
     inner_cv = KFold(n_splits=3, shuffle=False)
     outer_cv = KFold(n_splits=3, shuffle=False)  # LeaveOneOut()
     targets_pred, targets_true = [], []
