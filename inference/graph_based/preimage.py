@@ -24,8 +24,7 @@ along with peptide_design.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from itertools import repeat
 from cartesian import cartesian
-from gs_kernel.gs_kernel_slow import load_AA_matrix, compute_psi_dict 
-from gs_kernel.gs_kernel import compute_P
+from PBKB.kernels.utils import load_AA_matrix, compute_psi_dict, compute_P
 
 try:
     from preimage_fast import k_longest_path as fast_k_longest_path

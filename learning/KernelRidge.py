@@ -6,6 +6,7 @@ from sklearn.model_selection._search import check_is_fitted
 from sklearn.model_selection import KFold
 from sklearn.base import RegressorMixin, BaseEstimator
 from sklearn.linear_model.ridge import _solve_cholesky_kernel
+from sklearn.svm import SVC
 
 
 
@@ -116,6 +117,71 @@ class GSRidge(BaseEstimator, RegressorMixin):
             peptides, bioactivities = optimizer.k_longest_path(n_predictions)
         return peptides, bioactivities
 
+
+class GSsvm(BaseEstimator, RegressorMixin):
+    def __init__(self, C=1, amino_acid_file="", sigma_position=0.01,
+                 sigma_amino_acid=0.01, substring_length=1, is_normalized=True,
+                 center_kernel=False, verbose=1):
+        super(GSsvm, self).__init__()
+        self.C = C
+        self.amino_acid_file = amino_acid_file
+        self.sigma_position = sigma_position
+        self.sigma_amino_acid = sigma_amino_acid
+        self.substring_length = substring_length
+        self.is_normalized = is_normalized
+        self.center_kernel = center_kernel
+        self.verbose = verbose
+
+    def _get_kernel(self, X, Y=None):
+        if Y is None:
+            Y = X
+        return self.kernel(X, Y)
+
+    def fit(self, X, y=None, sample_weight=None):
+        self.kernel = GSKernel(amino_acid_file_name=self.amino_acid_file,
+                               sigma_position=self.sigma_position,
+                               sigma_amino_acid=self.sigma_amino_acid,
+                               n=self.substring_length,
+                               is_normalized=self.is_normalized)
+        K = self._get_kernel(X)
+        if self.center_kernel:
+            self.compute_train_stats(K, y)
+            K = self.kernel_centering(K)
+
+        self.model = SVC(C=self.C, kernel="precomputed").fit(K, y, sample_weight=sample_weight)
+        self.X_fit_ = X
+
+        return self
+
+    def predict(self, X):
+        """Predict using the kernel ridge model
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix}, shape = [n_samples, n_features]
+            Samples.
+
+        Returns
+        -------
+        C : array, shape = [n_samples] or [n_samples, n_targets]
+            Returns predicted values.
+        """
+        check_is_fitted(self, ["X_fit_"])
+        K = self._get_kernel(X, self.X_fit_)
+        if self.center_kernel:
+            K = self.kernel_centering(K)
+        return self.model.predict(K)
+
+    def kernel_centering(self, K):
+        mean_over_training = np.mean(K, axis=1)
+        temp = np.add.outer(mean_over_training, self.col_mean_training)
+        return (K - temp + self.mu_norm2) / self.sigma_square
+
+    def compute_train_stats(self, K, y):
+        self.mu_norm2 = np.mean(K)*1.0
+        self.sigma_square = np.mean(np.diagonal(K)) - self.mu_norm2
+        self.col_mean_training = np.mean(K, axis=1)
+        assert self.sigma_square >= 0
 
 if __name__ == "__main__":
     from sklearn.model_selection import GridSearchCV
